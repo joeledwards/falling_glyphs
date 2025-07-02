@@ -39,6 +39,7 @@ Glyph stacks:
   - stack: Array[Glyph]
   - update_interval: Duration
   - last_update: Timestamp
+  - ...other tracking variables as needed...
 
 ### Viewports
 
