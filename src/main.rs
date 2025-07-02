@@ -70,6 +70,7 @@ fn main() -> io::Result<()> {
 
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
+    stdout.execute(Clear(ClearType::All))?;
     terminal::disable_raw_mode()?;
     Ok(())
 }
