@@ -56,6 +56,8 @@ A diff is computed between current and next viewport to identify changes, then w
 
 Glyph tacks are rendered to the next viewport starting from those having the highest min_y value. The result is an apparent overwrite behavior.
 
+If the viewport size changes, we will automatically expand/contract the virtual viewports appropriately. We also need to delete any glyph stacks than end up getting trimmed out of the viewport via the resize.
+
 ### Controls
 
 Ignore mouse input.

@@ -43,6 +43,13 @@ fn main() -> io::Result<()> {
             }
         }
 
+        let (current_width, current_height) = game.get_dimensions();
+        let (new_width, new_height) = terminal::size()?;
+        if new_width != current_width || new_height != current_height {
+            game.resize(new_width, new_height);
+            stdout.execute(Clear(ClearType::All))?;
+        }
+
         let changes = game.update_and_get_changes();
         for change in changes {
             match change {

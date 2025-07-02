@@ -182,6 +182,18 @@ impl Game {
         }
     }
 
+    pub fn get_dimensions(&self) -> (u16, u16) {
+        (self.width, self.height)
+    }
+
+    pub fn resize(&mut self, width: u16, height: u16) {
+        self.width = width;
+        self.height = height;
+        self.current_view = Viewport::new(width, height);
+        self.stacks
+            .retain(|s| s.x < width && s.min_y < height as i16);
+    }
+
     pub fn increase_density(&mut self) {
         self.density = (self.density + 0.1).min(1.0);
     }
