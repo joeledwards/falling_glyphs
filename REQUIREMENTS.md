@@ -60,7 +60,9 @@ Glyph tacks are rendered to the next viewport starting from those having the hig
 
 Ignore mouse input.
 
-Wipe and exit on ESC, q, Ctrl+D, Ctrl+C
+* Wipe and exit on ESC, q, Ctrl+C
+* Increase density (spawn rate) when 'd' is pressed.
+* Decrease density (spawn rate) when 'D' is pressed.
 
 
 ### Flow
