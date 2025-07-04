@@ -66,6 +66,13 @@ Ignore mouse input.
 * Wipe and exit on ESC, q, Ctrl+C
 * Increase density (spawn rate) when 'd' is pressed.
 * Decrease density (spawn rate) when 'D' is pressed.
+* Increase max stack height when 'h' is pressed.
+* Decrease max stack height when 'H' is pressed.
+* Toggle the debug window when '?' is pressed.
+
+
+density is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5)
+max stack height is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5)
 
 
 ### Flow
@@ -90,4 +97,16 @@ For each tick:
   4.d. Replace current with next
 
 Exit key or combo is detected -> screen is wiped -> program exits
+
+### Debug Section
+
+There should be a toggable debug section (a few lines at the top of the screen) dedicated to debug info
+* current density setting
+* current max stack height setting
+* update delay
+* updates / sec (frequency in Hz)
+* glyphs / sec
+* glyphs / update
+* stacks / update
+* min/max glyph delay (actual, not the configured min/max)
 

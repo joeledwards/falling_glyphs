@@ -3,12 +3,25 @@ use rand::Rng;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
+#[derive(Clone, Debug, Default)]
+pub struct DebugInfo {
+    pub density: f64,
+    pub update_delay: u64,
+    pub updates_per_sec: f64,
+    pub glyphs_per_sec: f64,
+    pub glyphs_per_update: usize,
+    pub stacks_per_update: usize,
+    pub min_glyph_delay: u128,
+    pub max_glyph_delay: u128,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AnsiColor {
     White,
     Green,
     DarkGreen,
 }
+
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Glyph {
@@ -169,6 +182,11 @@ pub struct Game {
     stacks: Vec<GlyphStack>,
     current_view: Viewport,
     density: f64,
+    pub debug: bool,
+    pub debug_info: DebugInfo,
+    last_update_time: Instant,
+    update_counter: u32,
+    glyph_counter: usize,
 }
 
 impl Game {
@@ -179,7 +197,16 @@ impl Game {
             stacks: Vec::new(),
             current_view: Viewport::new(width, height),
             density: 0.5,
+            debug: false,
+            debug_info: DebugInfo::default(),
+            last_update_time: Instant::now(),
+            update_counter: 0,
+            glyph_counter: 0,
         }
+    }
+
+    pub fn toggle_debug(&mut self) {
+        self.debug = !self.debug;
     }
 
     pub fn get_dimensions(&self) -> (u16, u16) {
@@ -204,16 +231,24 @@ impl Game {
 
     pub fn update_and_get_changes(&mut self) -> Vec<Change> {
         let mut rng = ThreadRng::default();
+        let mut stacks_this_update = 0;
+        let mut glyphs_this_update = 0;
 
         // Determine whether any new stacks should be spawned
         if rng.gen_bool(self.density) {
             let x = rng.gen_range(0..self.width / 2) * 2;
             self.stacks.push(GlyphStack::new(x, self.height));
+            stacks_this_update += 1;
         }
 
         // Update glyph stacks
         for stack in &mut self.stacks {
+            let before_len = stack.stack.len();
             stack.update();
+            let after_len = stack.stack.len();
+            if after_len > before_len {
+                glyphs_this_update += 1;
+            }
         }
 
         // If y_min is outside of the viewport, delete the stack
@@ -235,6 +270,29 @@ impl Game {
 
         let changes = diff_viewports(&self.current_view, &next_view);
         self.current_view = next_view;
+
+        // Update debug info
+        self.update_counter += 1;
+        self.glyph_counter += glyphs_this_update;
+        let elapsed = self.last_update_time.elapsed();
+        if elapsed >= Duration::from_secs(1) {
+            self.debug_info.updates_per_sec = self.update_counter as f64 / elapsed.as_secs_f64();
+            self.debug_info.glyphs_per_sec = self.glyph_counter as f64 / elapsed.as_secs_f64();
+            self.update_counter = 0;
+            self.glyph_counter = 0;
+            self.last_update_time = Instant::now();
+        }
+        self.debug_info.density = self.density;
+        self.debug_info.glyphs_per_update = glyphs_this_update;
+        self.debug_info.stacks_per_update = stacks_this_update;
+        let delays: Vec<u128> = self
+            .stacks
+            .iter()
+            .map(|s| s.update_interval.as_millis())
+            .collect();
+        self.debug_info.min_glyph_delay = delays.iter().min().cloned().unwrap_or(0);
+        self.debug_info.max_glyph_delay = delays.iter().max().cloned().unwrap_or(0);
+
         changes
     }
 }

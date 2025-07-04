@@ -1,8 +1,1 @@
 - ability to adjust stack "gravity", which tunes their tendancy to spawn closer to other stacks, rather than fully random
-- debug window which reserves a few lines at the top of the screen dedicatd to debug info
-  - update delay
-  - updates / sec (frequency in Hz)
-  - glyphs / sec
-  - glyphs / update
-  - stacks / update
-  - min/max glyph delay (actual, not the configured min/max)
