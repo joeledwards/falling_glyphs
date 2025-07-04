@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 #[derive(Clone, Debug, Default)]
 pub struct DebugInfo {
     pub density: f64,
+    pub max_stack_height: f64,
     pub update_delay: u64,
     pub updates_per_sec: f64,
     pub glyphs_per_sec: f64,
@@ -107,10 +108,10 @@ fn random_glyph() -> char {
 }
 
 impl GlyphStack {
-    pub fn new(x: u16, height: u16) -> Self {
+    pub fn new(x: u16, max_height: u16) -> Self {
         let mut rng = ThreadRng::default();
-        let length = rng.gen_range(1..height as u16 * 3 / 4);
-        let update_interval = Duration::from_millis(rng.gen_range(50..250));
+        let length = rng.gen_range(1..=max_height);
+        let update_interval = Duration::from_millis(rng.gen_range(50..=250));
 
         let mut stack = VecDeque::with_capacity(length as usize);
         stack.push_front(Glyph {
@@ -182,6 +183,7 @@ pub struct Game {
     stacks: Vec<GlyphStack>,
     current_view: Viewport,
     density: f64,
+    max_stack_height: f64,
     pub debug: bool,
     pub debug_info: DebugInfo,
     last_update_time: Instant,
@@ -197,12 +199,21 @@ impl Game {
             stacks: Vec::new(),
             current_view: Viewport::new(width, height),
             density: 0.5,
+            max_stack_height: 0.5,
             debug: false,
             debug_info: DebugInfo::default(),
             last_update_time: Instant::now(),
             update_counter: 0,
             glyph_counter: 0,
         }
+    }
+
+    pub fn increase_max_stack_height(&mut self) {
+        self.max_stack_height = (self.max_stack_height + 0.1).min(1.0);
+    }
+
+    pub fn decrease_max_stack_height(&mut self) {
+        self.max_stack_height = (self.max_stack_height - 0.1).max(0.1);
     }
 
     pub fn toggle_debug(&mut self) {
@@ -237,7 +248,8 @@ impl Game {
         // Determine whether any new stacks should be spawned
         if rng.gen_bool(self.density) {
             let x = rng.gen_range(0..self.width / 2) * 2;
-            self.stacks.push(GlyphStack::new(x, self.height));
+            let max_len = (self.height as f64 * self.max_stack_height) as u16;
+            self.stacks.push(GlyphStack::new(x, max_len));
             stacks_this_update += 1;
         }
 
@@ -283,6 +295,7 @@ impl Game {
             self.last_update_time = Instant::now();
         }
         self.debug_info.density = self.density;
+        self.debug_info.max_stack_height = self.max_stack_height;
         self.debug_info.glyphs_per_update = glyphs_this_update;
         self.debug_info.stacks_per_update = stacks_this_update;
         let delays: Vec<u128> = self

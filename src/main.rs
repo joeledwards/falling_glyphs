@@ -22,6 +22,10 @@ fn convert_color(ansi_color: AnsiColor) -> Color {
 fn render_debug_info(stdout: &mut io::Stdout, debug_info: &DebugInfo, width: u16) -> io::Result<u16> {
     let metrics: Vec<(&str, String)> = vec![
         ("Density:", format!("{:.1}", debug_info.density)),
+        (
+            "Max Stack Height:",
+            format!("{:.1}", debug_info.max_stack_height),
+        ),
         ("Updates/sec:", format!("{:.2}", debug_info.updates_per_sec)),
         ("Glyphs/sec:", format!("{:.2}", debug_info.glyphs_per_sec)),
         ("Glyphs/update:", format!("{}", debug_info.glyphs_per_update)),
@@ -92,6 +96,8 @@ fn main() -> io::Result<()> {
                     KeyCode::Char('d') if key_event.modifiers == KeyModifiers::CONTROL => break,
                     KeyCode::Char('d') => game.increase_density(),
                     KeyCode::Char('D') => game.decrease_density(),
+                    KeyCode::Char('h') => game.increase_max_stack_height(),
+                    KeyCode::Char('H') => game.decrease_max_stack_height(),
                     KeyCode::Char('?') => game.toggle_debug(),
                     _ => {}
                 }
