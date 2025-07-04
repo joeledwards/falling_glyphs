@@ -64,15 +64,20 @@ If the viewport size changes, we will automatically expand/contract the virtual 
 Ignore mouse input.
 
 * Wipe and exit on ESC, q, Ctrl+C
+* Toggle the debug window when '?' is pressed.
 * Increase density (spawn rate) when 'd' is pressed.
 * Decrease density (spawn rate) when 'D' is pressed.
 * Increase max stack height when 'h' is pressed.
 * Decrease max stack height when 'H' is pressed.
-* Toggle the debug window when '?' is pressed.
+* Increase speed when 's' is pressed.
+* Decrease speed when 'S' is pressed.
 
 
-density is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5)
-max stack height is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5)
+Density is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5). Controls the frequency of glyph stack spawning.
+
+Max stack height is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5).
+
+Speed is from 1 to 50 in increments of 1 (default 10). Controls the rate at which glyph stacks scroll down the screen, acting as a factor that adjusts the tick rate for all stacks.
 
 
 ### Flow
@@ -101,8 +106,9 @@ Exit key or combo is detected -> screen is wiped -> program exits
 ### Debug Section
 
 There should be a toggable debug section (a few lines at the top of the screen) dedicated to debug info
-* current density setting
-* current max stack height setting
+* current density setting  |  density 0.5 [ooooo     ]
+* current max stack height setting  |  max stack height 0.5 [ooooo     ]
+* current speed setting  |  speed 10 [oo        ]
 * update delay
 * updates / sec (frequency in Hz)
 * glyphs / sec

@@ -7,6 +7,7 @@ use std::time::{Duration, Instant};
 pub struct DebugInfo {
     pub density: f64,
     pub max_stack_height: f64,
+    pub speed: u8,
     pub update_delay: u64,
     pub updates_per_sec: f64,
     pub glyphs_per_sec: f64,
@@ -130,8 +131,11 @@ impl GlyphStack {
         }
     }
 
-    pub fn update(&mut self) {
-        if self.last_update.elapsed() >= self.update_interval {
+    pub fn update(&mut self, speed: u8) {
+        let interval = Duration::from_millis(
+            (self.update_interval.as_millis() as f64 / (speed as f64 / 10.0)) as u64,
+        );
+        if self.last_update.elapsed() >= interval {
             self.last_update = Instant::now();
 
             // Push a new, white glyph onto the stack
@@ -184,6 +188,7 @@ pub struct Game {
     current_view: Viewport,
     density: f64,
     max_stack_height: f64,
+    speed: u8,
     pub debug: bool,
     pub debug_info: DebugInfo,
     last_update_time: Instant,
@@ -200,12 +205,21 @@ impl Game {
             current_view: Viewport::new(width, height),
             density: 0.5,
             max_stack_height: 0.5,
+            speed: 10,
             debug: false,
             debug_info: DebugInfo::default(),
             last_update_time: Instant::now(),
             update_counter: 0,
             glyph_counter: 0,
         }
+    }
+
+    pub fn increase_speed(&mut self) {
+        self.speed = (self.speed + 1).min(50);
+    }
+
+    pub fn decrease_speed(&mut self) {
+        self.speed = (self.speed - 1).max(1);
     }
 
     pub fn increase_max_stack_height(&mut self) {
@@ -245,8 +259,21 @@ impl Game {
         let mut stacks_this_update = 0;
         let mut glyphs_this_update = 0;
 
-        // Determine whether any new stacks should be spawned
-        if rng.gen_bool(self.density) {
+        // Determine whether any new stacks should be spawned, scaling with speed
+        let speed_multiplier = self.speed as f64 / 10.0;
+        let effective_density = self.density * speed_multiplier;
+
+        let guaranteed_spawns = effective_density.floor() as u32;
+        let chance_for_one_more = effective_density.fract();
+
+        for _ in 0..guaranteed_spawns {
+            let x = rng.gen_range(0..self.width / 2) * 2;
+            let max_len = (self.height as f64 * self.max_stack_height) as u16;
+            self.stacks.push(GlyphStack::new(x, max_len));
+            stacks_this_update += 1;
+        }
+
+        if rng.gen_bool(chance_for_one_more) {
             let x = rng.gen_range(0..self.width / 2) * 2;
             let max_len = (self.height as f64 * self.max_stack_height) as u16;
             self.stacks.push(GlyphStack::new(x, max_len));
@@ -256,7 +283,7 @@ impl Game {
         // Update glyph stacks
         for stack in &mut self.stacks {
             let before_len = stack.stack.len();
-            stack.update();
+            stack.update(self.speed);
             let after_len = stack.stack.len();
             if after_len > before_len {
                 glyphs_this_update += 1;
@@ -296,6 +323,7 @@ impl Game {
         }
         self.debug_info.density = self.density;
         self.debug_info.max_stack_height = self.max_stack_height;
+        self.debug_info.speed = self.speed;
         self.debug_info.glyphs_per_update = glyphs_this_update;
         self.debug_info.stacks_per_update = stacks_this_update;
         let delays: Vec<u128> = self
