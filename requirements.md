@@ -79,7 +79,6 @@ Max stack height is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5).
 
 Speed is from 1 to 50 in increments of 1 (default 10). Controls the rate at which glyph stacks scroll down the screen, acting as a factor that adjusts the tick rate for all stacks.
 
-
 ### Flow
 
 Program starts -> screen is wiped -> loop is launched
@@ -103,9 +102,9 @@ For each tick:
 
 Exit key or combo is detected -> screen is wiped -> program exits
 
-### Debug Section
+### Debug Window
 
-There should be a toggable debug section (a few lines at the top of the screen) dedicated to debug info
+There should be a toggable debug window (a few lines at the top of the screen) dedicated to debug info
 * current density setting  |  density 0.5 [ooooo     ]
 * current max stack height setting  |  max stack height 0.5 [ooooo     ]
 * current speed setting  |  speed 10 [oo        ]
