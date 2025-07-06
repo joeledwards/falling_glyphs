@@ -84,16 +84,21 @@ fn render_debug_info(
     }
     lines.extend(vec!["".to_string(); settings_lines.len()]);
 
-    lines.push("".to_string()); // Spacer line
-    lines.extend_from_slice(perf_lines);
-
     // --- Render performance lines ---
-    let base_y = settings_lines.len() as u16 + 1;
+    let base_y = settings_lines.len() as u16;
+    let spacer_y = base_y;
+    stdout
+        .execute(MoveTo(0, spacer_y))?
+        .execute(Print(" ".repeat(width as usize)))?;
+
     for (i, line) in perf_lines.iter().enumerate() {
         stdout
-            .execute(MoveTo(0, base_y + i as u16))?
+            .execute(MoveTo(0, base_y + 1 + i as u16))?
             .execute(Print(format!("{:<width$}", line, width = width as usize)))?;
     }
+
+    lines.push("".to_string()); // Spacer line
+    lines.extend_from_slice(perf_lines);
 
     let num_lines = lines.len() as u16;
     let underscore_line = "_".repeat(width as usize);
