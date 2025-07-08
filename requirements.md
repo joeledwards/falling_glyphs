@@ -67,6 +67,8 @@ Ignore mouse input.
 * Toggle the debug window when '?' is pressed.
 * Increase density (spawn rate) when 'd' is pressed.
 * Decrease density (spawn rate) when 'D' is pressed.
+* Increase gravity when 'g' is pressed.
+* Decrease gravity when 'G' is pressed.
 * Increase max stack height when 'h' is pressed.
 * Decrease max stack height when 'H' is pressed.
 * Increase speed when 's' is pressed.
@@ -74,6 +76,8 @@ Ignore mouse input.
 
 
 Density is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5). Controls the frequency of glyph stack spawning.
+
+Gravity is a ratio from 0.0 to 1.0 in increments of 0.1 (default 0.0). Controls the probability of stacks spawning adjacent to other stacks.
 
 Max stack height is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5).
 

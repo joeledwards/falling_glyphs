@@ -49,7 +49,7 @@ fn render_debug_info(
     // Density
     let density_percent = (debug_info.density - 0.1) / 0.9;
     settings_lines.push((
-        "Density:",
+        "Density (d/D):",
         create_bar(density_percent, bar_width),
         format!("{:.1}", debug_info.density),
         Color::Green,
@@ -57,7 +57,7 @@ fn render_debug_info(
     // Max Stack Height
     let height_percent = (debug_info.max_stack_height - 0.1) / 0.9;
     settings_lines.push((
-        "Max Stack Height:",
+        "Max Stack Height (h/H):",
         create_bar(height_percent, bar_width),
         format!("{:.1}", debug_info.max_stack_height),
         Color::Yellow,
@@ -65,10 +65,18 @@ fn render_debug_info(
     // Speed
     let speed_percent = (debug_info.speed as f64 - 1.0) / 49.0;
     settings_lines.push((
-        "Speed Level:",
+        "Speed Level (s/S):",
         create_bar(speed_percent, bar_width),
         debug_info.speed.to_string(),
         Color::Blue,
+    ));
+    // Gravity
+    let gravity_percent = debug_info.gravity;
+    settings_lines.push((
+        "Gravity (g/G):",
+        create_bar(gravity_percent, bar_width),
+        format!("{:.1}", debug_info.gravity),
+        Color::Magenta,
     ));
 
     // --- Render all lines ---
@@ -132,6 +140,8 @@ fn main() -> io::Result<()> {
                     KeyCode::Char('c') if key_event.modifiers == KeyModifiers::CONTROL => break,
                     KeyCode::Char('d') => game.increase_density(),
                     KeyCode::Char('D') => game.decrease_density(),
+                    KeyCode::Char('g') => game.increase_gravity(),
+                    KeyCode::Char('G') => game.decrease_gravity(),
                     KeyCode::Char('h') => game.increase_max_stack_height(),
                     KeyCode::Char('H') => game.decrease_max_stack_height(),
                     KeyCode::Char('s') => game.increase_speed(),

@@ -1,3 +1,4 @@
+use rand::distributions::{Distribution, WeightedIndex};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::collections::VecDeque;
@@ -6,6 +7,7 @@ use std::time::{Duration, Instant};
 #[derive(Clone, Debug, Default)]
 pub struct DebugInfo {
     pub density: f64,
+    pub gravity: f64,
     pub max_stack_height: f64,
     pub speed: u8,
     pub update_delay: u64,
@@ -23,7 +25,6 @@ pub enum AnsiColor {
     Green,
     DarkGreen,
 }
-
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Glyph {
@@ -187,6 +188,7 @@ pub struct Game {
     stacks: Vec<GlyphStack>,
     current_view: Viewport,
     density: f64,
+    gravity: f64,
     max_stack_height: f64,
     speed: u8,
     pub debug: bool,
@@ -204,6 +206,7 @@ impl Game {
             stacks: Vec::new(),
             current_view: Viewport::new(width, height),
             density: 0.5,
+            gravity: 0.0,
             max_stack_height: 0.5,
             speed: 10,
             debug: false,
@@ -220,6 +223,14 @@ impl Game {
 
     pub fn decrease_speed(&mut self) {
         self.speed = (self.speed - 1).max(1);
+    }
+
+    pub fn increase_gravity(&mut self) {
+        self.gravity = (self.gravity + 0.1).min(1.0);
+    }
+
+    pub fn decrease_gravity(&mut self) {
+        self.gravity = (self.gravity - 0.1).max(0.0);
     }
 
     pub fn increase_max_stack_height(&mut self) {
@@ -254,6 +265,34 @@ impl Game {
         self.density = (self.density - 0.1).max(0.1);
     }
 
+    fn spawn_stack(&mut self, mut rng: &mut ThreadRng) {
+        let x = if self.stacks.is_empty() || self.gravity == 0.0 {
+            // No stacks or gravity is off, spawn randomly
+            rng.gen_range(0..self.width / 2) * 2
+        } else {
+            // Gravity is on, spawn near existing stacks
+            let existing_stacks_pos: Vec<u16> = self.stacks.iter().map(|s| s.x).collect();
+            let mut weights: Vec<f64> = (0..self.width / 2)
+                .map(|i| {
+                    let pos = i * 2;
+                    let min_dist = existing_stacks_pos
+                        .iter()
+                        .map(|&sx| (pos as i16 - sx as i16).abs() as f64)
+                        .fold(f64::INFINITY, f64::min);
+                    // The higher the gravity, the more we favor smaller distances
+                    // We use an exponential decay function
+                    (-self.gravity * min_dist).exp()
+                })
+                .collect();
+
+            let dist = WeightedIndex::new(&weights).unwrap();
+            (dist.sample(&mut rng) * 2) as u16
+        };
+
+        let max_len = (self.height as f64 * self.max_stack_height) as u16;
+        self.stacks.push(GlyphStack::new(x, max_len));
+    }
+
     pub fn update_and_get_changes(&mut self) -> Vec<Change> {
         let mut rng = ThreadRng::default();
         let mut stacks_this_update = 0;
@@ -267,16 +306,12 @@ impl Game {
         let chance_for_one_more = effective_density.fract();
 
         for _ in 0..guaranteed_spawns {
-            let x = rng.gen_range(0..self.width / 2) * 2;
-            let max_len = (self.height as f64 * self.max_stack_height) as u16;
-            self.stacks.push(GlyphStack::new(x, max_len));
+            self.spawn_stack(&mut rng);
             stacks_this_update += 1;
         }
 
         if rng.gen_bool(chance_for_one_more) {
-            let x = rng.gen_range(0..self.width / 2) * 2;
-            let max_len = (self.height as f64 * self.max_stack_height) as u16;
-            self.stacks.push(GlyphStack::new(x, max_len));
+            self.spawn_stack(&mut rng);
             stacks_this_update += 1;
         }
 
@@ -322,6 +357,7 @@ impl Game {
             self.last_update_time = Instant::now();
         }
         self.debug_info.density = self.density;
+        self.debug_info.gravity = self.gravity;
         self.debug_info.max_stack_height = self.max_stack_height;
         self.debug_info.speed = self.speed;
         self.debug_info.glyphs_per_update = glyphs_this_update;
@@ -337,3 +373,4 @@ impl Game {
         changes
     }
 }
+

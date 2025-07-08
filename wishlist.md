@@ -1,1 +1,0 @@
-- ability to adjust stack "gravity", which tunes their tendancy to spawn closer to other stacks, rather than fully random
