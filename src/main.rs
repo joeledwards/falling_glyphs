@@ -35,7 +35,7 @@ fn render_debug_info(
     };
 
     // --- Configurable Settings with Bars ---
-    let label_width = 22;
+    let label_width = 26;
     let value_width = 6;
     let bar_padding = 2; // for "  " around the bar
     let bar_width = if width > (label_width + value_width + bar_padding) as u16 {
@@ -133,7 +133,7 @@ fn main() -> io::Result<()> {
     let mut cached_perf_lines: Vec<String> = Vec::new();
 
     loop {
-        if event::poll(Duration::from_millis(75))? {
+        if event::poll(Duration::from_millis(60))? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Char('q') | KeyCode::Esc => break,

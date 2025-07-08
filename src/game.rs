@@ -133,9 +133,47 @@ impl GlyphStack {
     }
 
     pub fn update(&mut self, speed: u8) {
-        let interval = Duration::from_millis(
-            (self.update_interval.as_millis() as f64 / (speed as f64 / 10.0)) as u64,
-        );
+        // Constants for the speed mapping
+        const MIN_SPEED: f64 = 1.0;
+        const MAX_SPEED: f64 = 50.0;
+
+        // The base interval range for glyph stacks
+        const BASE_MIN_INTERVAL: f64 = 50.0;
+        const BASE_MAX_INTERVAL: f64 = 250.0;
+
+        // The target interval range at MIN_SPEED
+        const TARGET_MIN_INTERVAL_AT_MIN_SPEED: f64 = 250.0;
+        const TARGET_MAX_INTERVAL_AT_MIN_SPEED: f64 = 1250.0;
+
+        // The target interval range at MAX_SPEED
+        const TARGET_MIN_INTERVAL_AT_MAX_SPEED: f64 = 30.0;
+        const TARGET_MAX_INTERVAL_AT_MAX_SPEED: f64 = 150.0;
+
+        // 1. Calculate a normalized progress factor from the speed value (1-50)
+        // We use a logarithmic scale for speed to make it feel more natural.
+        let speed_progress =
+            ((speed as f64).ln() - MIN_SPEED.ln()) / (MAX_SPEED.ln() - MIN_SPEED.ln());
+
+        // 2. Determine the target min and max intervals for the current speed
+        // We interpolate between the min/max speed targets on a log scale.
+        let target_min_interval = TARGET_MIN_INTERVAL_AT_MIN_SPEED
+            * (TARGET_MIN_INTERVAL_AT_MAX_SPEED / TARGET_MIN_INTERVAL_AT_MIN_SPEED)
+                .powf(speed_progress);
+        let target_max_interval = TARGET_MAX_INTERVAL_AT_MIN_SPEED
+            * (TARGET_MAX_INTERVAL_AT_MAX_SPEED / TARGET_MAX_INTERVAL_AT_MIN_SPEED)
+                .powf(speed_progress);
+
+        // 3. Normalize the stack's base interval to a value between 0 and 1
+        let base_interval = self.update_interval.as_millis() as f64;
+        let normalized_interval =
+            (base_interval - BASE_MIN_INTERVAL) / (BASE_MAX_INTERVAL - BASE_MIN_INTERVAL);
+
+        // 4. Map the normalized interval to the target range
+        let final_interval_ms =
+            target_min_interval + normalized_interval * (target_max_interval - target_min_interval);
+
+        let interval = Duration::from_millis(final_interval_ms as u64);
+
         if self.last_update.elapsed() >= interval {
             self.last_update = Instant::now();
 
