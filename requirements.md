@@ -81,7 +81,7 @@ Gravity is a ratio from 0.0 to 1.0 in increments of 0.1 (default 0.0). Controls 
 
 Max stack height is a ratio from 0.1 to 1.0 in increments of 0.1 (default 0.5).
 
-Speed is from 1 to 50 in increments of 1 (default 10). Controls the rate at which glyph stacks scroll down the screen, acting as a factor that adjusts the tick rate for all stacks.
+Speed is from 1 to 50 in increments of 1 (default 25). Controls the rate at which glyph stacks scroll down the screen, acting as a factor that adjusts the tick rate for all stacks.
 
 ### Flow
 

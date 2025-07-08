@@ -246,7 +246,7 @@ impl Game {
             density: 0.5,
             gravity: 0.0,
             max_stack_height: 0.5,
-            speed: 10,
+            speed: 25,
             debug: false,
             debug_info: DebugInfo::default(),
             last_update_time: Instant::now(),
